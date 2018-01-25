@@ -327,6 +327,22 @@ class TestRelationField:
         assert hasattr(loaded, 'relation')
         assert loaded.relation == self.obj2
 
+    def test_deserialization_full(self, monkeypatch):
+        def fake_related_class(their, class_name):
+            return self.obj1.__class__
+
+        monkeypatch.setattr(RelationField, '_get_related_class', fake_related_class)
+
+        serialized = '{cls}:{id}'.format(
+            cls=self.obj2.__class__,
+            id=self.obj2.id,
+        )
+
+        self.obj1._relation.deserialize(serialized, namespace=namespace)
+
+        assert self.obj2.get_dict(True) == self.obj1.relation.get_dict(True)
+
+
 
 class TestNamespaces:
     def setup(self):
